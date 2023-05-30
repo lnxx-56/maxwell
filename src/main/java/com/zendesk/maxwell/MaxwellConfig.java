@@ -78,6 +78,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public Boolean ignoreMissingSchema;
 
 	/**
+	 * Use whitelist in order to ignore all tables except ones are listed on this whitelist
+	 */
+	public Boolean useWhiteListMode;
+
+	/**
 	 * Attempt to use Mysql GTIDs to keep track of position
 	 */
 	public Boolean gtidMode;

@@ -103,6 +103,17 @@ public class Filter {
 		return !match.include;
 	}
 
+	public boolean isTableOnWhitelist(String database, String table) {
+		FilterResult match = new FilterResult();
+
+		for ( FilterPattern p : patterns ) {
+			if (p.getType() == FIlterPatternType.WHITELIST )
+				p.match(database, table, match);
+		}
+
+		return !match.include;
+	}
+
 	public boolean isDatabaseBlacklisted(String database) {
 		if ( isMaxwellDB(database) )
 			return false;

@@ -65,6 +65,9 @@ public class FilterPattern {
 			case BLACKLIST:
 				s += "blacklist: ";
 				break;
+			case WHITELIST:
+				s += "whitelist: ";
+				break;
 		}
 
 		return s + patternToString(dbPattern) + "." + patternToString(tablePattern);

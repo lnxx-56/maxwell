@@ -15,9 +15,13 @@ public class TableCache {
 	}
 	private final HashMap<Long, Table> tableMapCache = new HashMap<>();
 
-	public void processEvent(Schema schema, Filter filter, Boolean ignoreMissingSchema, Long tableId, String dbName, String tblName) {
+	public void processEvent(Schema schema, Filter filter, Boolean ignoreMissingSchema, Long tableId, String dbName, String tblName, Boolean whiteListMode) {
 		if ( !tableMapCache.containsKey(tableId)) {
-			if ( filter.isTableBlacklisted(dbName, tblName) ) {
+			if ( !whiteListMode && filter.isTableBlacklisted(dbName, tblName) ) {
+				return;
+			}
+			
+			if(whiteListMode && !this.filter.isTableOnWhitelist(dbName, tblName)) {
 				return;
 			}
 

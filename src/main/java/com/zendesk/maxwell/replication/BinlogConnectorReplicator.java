@@ -66,6 +66,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private Long stopAtHeartbeat;
 	private Filter filter;
 	private Boolean ignoreMissingSchema;
+	private Boolean useWhiteListMode;
 
 	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
@@ -104,7 +105,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			Filter filter,
 			MaxwellOutputConfig outputConfig,
 			float bufferMemoryUsage,
-			int replicationReconnectionRetries
+			int replicationReconnectionRetries,
+			boolean useWhiteListMode
 	) {
 		this(
 				schemaStore,
@@ -124,11 +126,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				outputConfig,
 				bufferMemoryUsage,
 				replicationReconnectionRetries,
+				useWhiteListMode = false,
 				BINLOG_QUEUE_SIZE
 		);
 	}
 
-	public BinlogConnectorReplicator(
+	public BinlogConnectorReplicator (
 		SchemaStore schemaStore,
 		AbstractProducer producer,
 		BootstrapController bootstrapper,
@@ -146,7 +149,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		MaxwellOutputConfig outputConfig,
 		float bufferMemoryUsage,
 		int replicationReconnectionRetries,
-		int binlogEventQueueSize
+		int binlogEventQueueSize,
+		boolean useWhiteListMode = false
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -163,6 +167,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
 		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
+		this.useWhiteListMode = useWhiteListMode;
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -589,7 +594,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter, this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable(), this.useWhiteListMode);
 					break;
 				case ROWS_QUERY:
 					RowsQueryEventData rqed = event.getEvent().getData();
@@ -714,7 +719,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter,this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter,this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable(), this.useWhiteListMode);
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
